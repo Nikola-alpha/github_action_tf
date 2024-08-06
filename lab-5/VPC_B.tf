@@ -3,15 +3,15 @@ variable "vpc_name_beta" {
 }
 
 variable "ec2_count_beta" {
-  default = 2
+  default = 1
 }
 
 module "vpc_beta" {
-  source = "./modules/base-infra"
-  cidr_block = "192.168.0.0/16"
-  public_subnet_count = 2
-  public_subnet_cidrs = ["192.168.0.0/24", "192.168.1.0/24"]
-  vpc_name = var.vpc_name_beta
+  source              = "./modules/base-infra"
+  cidr_block          = "192.168.0.0/16"
+  public_subnet_count = 1
+  public_subnet_cidrs = ["192.168.0.0/24"]
+  vpc_name            = var.vpc_name_beta
 }
 
 # Create TLS keys
@@ -38,7 +38,7 @@ resource "null_resource" "set_key_file_permissions_beta" {
     command     = "chmod 400 ${local_file.beta_key.filename}"
     interpreter = ["sh", "-c"]
   }
-    # Make sure this runs after the local file is created
+  # Make sure this runs after the local file is created
   depends_on = [local_file.beta_key]
 }
 
@@ -67,9 +67,9 @@ resource "aws_security_group" "beta_sg" {
 
 # Create ec2 with eip
 resource "aws_instance" "beta" {
-  count = var.ec2_count
+  count                       = var.ec2_count
   ami                         = "ami-025fe52e1f2dc5044"
-  instance_type               = "t2.small"
+  instance_type               = "t3.micro"
   subnet_id                   = element(module.vpc_beta.public_subnet_ids, 0)
   key_name                    = aws_key_pair.beta_key.key_name
   vpc_security_group_ids      = [aws_security_group.beta_sg.id]
@@ -81,8 +81,8 @@ resource "aws_instance" "beta" {
   }
 }
 resource "aws_eip" "beta" {
-  count = var.ec2_count
-  domain = "vpc"
+  count    = var.ec2_count
+  domain   = "vpc"
   instance = aws_instance.beta[count.index].id
   tags = {
     Name       = "${var.vpc_name_beta}-eip"

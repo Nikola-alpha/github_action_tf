@@ -7,11 +7,11 @@ variable "ec2_count" {
 }
 
 module "vpc_alpha" {
-  source = "./modules/base-infra"
-  cidr_block = "10.1.0.0/16"
+  source              = "./modules/base-infra"
+  cidr_block          = "10.1.0.0/16"
   public_subnet_count = 2
   public_subnet_cidrs = ["10.1.0.0/24", "10.1.1.0/24"]
-  vpc_name = var.vpc_name
+  vpc_name            = var.vpc_name
 }
 
 # Create TLS keys
@@ -38,7 +38,7 @@ resource "null_resource" "set_key_file_permissions" {
     command     = "chmod 400 ${local_file.alpha_key.filename}"
     interpreter = ["sh", "-c"]
   }
-    # Make sure this runs after the local file is created
+  # Make sure this runs after the local file is created
   depends_on = [local_file.alpha_key]
 }
 
@@ -61,25 +61,25 @@ resource "aws_security_group" "alpha_sg" {
 
 # Create ec2 with eip
 resource "aws_instance" "alpha" {
-  count = var.ec2_count
+  count                       = var.ec2_count
   ami                         = "ami-025fe52e1f2dc5044"
-  instance_type               = "t2.micro"
+  instance_type               = "t3.micro"
   subnet_id                   = element(module.vpc_alpha.public_subnet_ids, 0)
   key_name                    = aws_key_pair.gen_key.key_name
   vpc_security_group_ids      = [aws_security_group.alpha_sg.id]
   associate_public_ip_address = false
 
   tags = {
-    Name       = "${var.vpc_name}-instance-${count.index}"
+    Name       = "${var.vpc_name}-instance-${count.index + 1}"
     Managed_by = local.Managed_by
   }
 }
 resource "aws_eip" "web" {
-  count = var.ec2_count
-  domain = "vpc"
+  count    = var.ec2_count
+  domain   = "vpc"
   instance = aws_instance.alpha[count.index].id
   tags = {
-    Name       = "${var.vpc_name}-eip"
+    Name       = "${var.vpc_name}-eip-${count.index + 1}"
     Managed_by = local.Managed_by
   }
 }
