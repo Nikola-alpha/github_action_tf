@@ -29,4 +29,12 @@ output "public_subnet_ids_delta" {
 # output "vpc_cidr_block" {
 #   value = module.vpc_delta.vpc_cidr_block
 # }
+output "bastion_ssh_command_for_serverAB" {
+  value       = "ssh -i ${local_file.alpha_key.filename} ec2-user@${aws_eip.web[0].public_ip}"
+  description = "Command to SSH into the bastion host"
+}
 
+output "bastion_ssh_command_for_serverAC" {
+  value       = "ssh -i ${local_file.alpha_key.filename} ec2-user@${aws_eip.web[1].public_ip}"
+  description = "Command to SSH into the bastion host"
+}

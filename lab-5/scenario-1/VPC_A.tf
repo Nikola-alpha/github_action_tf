@@ -7,7 +7,7 @@ variable "ec2_count" {
 }
 
 module "vpc_alpha" {
-  source              = "./modules/base-infra"
+  source              = "../modules/base-infra"
   cidr_block          = "10.1.0.0/16"
   public_subnet_count = 2
   public_subnet_cidrs = ["10.1.0.0/24", "10.1.1.0/24"]
@@ -51,6 +51,12 @@ resource "aws_security_group" "alpha_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+    ingress {
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = ["192.168.0.0/16", "192.169.0.0/16"]
+  }
   egress {
     from_port   = 0
     to_port     = 0
@@ -62,7 +68,7 @@ resource "aws_security_group" "alpha_sg" {
 # Create ec2 with eip
 resource "aws_instance" "alpha" {
   count                       = var.ec2_count
-  ami                         = "ami-025fe52e1f2dc5044"
+  ami                         = "ami-0ba9883b710b05ac6"
   instance_type               = "t3.micro"
   subnet_id                   = element(module.vpc_alpha.public_subnet_ids, 0)
   key_name                    = aws_key_pair.gen_key.key_name

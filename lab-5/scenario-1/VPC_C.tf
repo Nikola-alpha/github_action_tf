@@ -7,7 +7,7 @@ variable "ec2_count_delta" {
 }
 
 module "vpc_delta" {
-  source              = "./modules/base-infra"
+  source              = "../modules/base-infra"
   cidr_block          = "192.168.0.0/16"
   public_subnet_count = 1
   public_subnet_cidrs = ["192.168.0.0/24"]
@@ -21,8 +21,9 @@ resource "aws_vpc_ipv4_cidr_block_association" "secondary_cidr" {
 
 resource "aws_subnet" "secondary_public" {
   vpc_id                  = module.vpc_delta.vpc_id
-  cidr_block              = "192.169.0.0/16"
+  cidr_block              = "192.169.0.0/24"
   map_public_ip_on_launch = true
+  depends_on = [ aws_vpc_ipv4_cidr_block_association.secondary_cidr ]
 
   tags = {
     Name = "${var.vpc_name_delta}-secondary-public-subnet"
@@ -99,8 +100,8 @@ resource "aws_security_group" "delta_sg" {
 
 # Create ec2 with eip
 resource "aws_instance" "delta" {
-  count                       = var.ec2_count
-  ami                         = "ami-025fe52e1f2dc5044"
+  count                       = var.ec2_count_delta
+  ami                         = "ami-0ba9883b710b05ac6"
   instance_type               = "t3.micro"
   subnet_id                   = aws_subnet.secondary_public.id
   key_name                    = aws_key_pair.delta_key.key_name
@@ -109,12 +110,12 @@ resource "aws_instance" "delta" {
   private_ip                  = "192.169.0.10"
 
   tags = {
-    Name       = "${var.vpc_name_delta}-instance-${count.index}"
+    Name       = "${var.vpc_name_delta}-instance-${count.index + 1}"
     Managed_by = local.Managed_by
   }
 }
 resource "aws_eip" "delta" {
-  count                     = var.ec2_count
+  count                     = var.ec2_count_delta
   domain                    = "vpc"
   instance                  = aws_instance.delta[count.index].id
   associate_with_private_ip = "192.169.0.10"

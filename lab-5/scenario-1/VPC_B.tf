@@ -7,7 +7,7 @@ variable "ec2_count_beta" {
 }
 
 module "vpc_beta" {
-  source              = "./modules/base-infra"
+  source              = "../modules/base-infra"
   cidr_block          = "192.168.0.0/16"
   public_subnet_count = 1
   public_subnet_cidrs = ["192.168.0.0/24"]
@@ -67,21 +67,21 @@ resource "aws_security_group" "beta_sg" {
 
 # Create ec2 with eip
 resource "aws_instance" "beta" {
-  count                       = var.ec2_count
-  ami                         = "ami-025fe52e1f2dc5044"
-  instance_type               = "t3.micro"
+  count                       = var.ec2_count_beta
+  ami                         = "ami-0ba9883b710b05ac6"
+  instance_type               = "t2.micro"
   subnet_id                   = element(module.vpc_beta.public_subnet_ids, 0)
   key_name                    = aws_key_pair.beta_key.key_name
   vpc_security_group_ids      = [aws_security_group.beta_sg.id]
   associate_public_ip_address = false
 
   tags = {
-    Name       = "${var.vpc_name_beta}-instance-${count.index}"
+    Name       = "${var.vpc_name_beta}-instance-${count.index + 1}"
     Managed_by = local.Managed_by
   }
 }
 resource "aws_eip" "beta" {
-  count    = var.ec2_count
+  count    = var.ec2_count_beta
   domain   = "vpc"
   instance = aws_instance.beta[count.index].id
   tags = {
