@@ -15,13 +15,13 @@ resource "aws_vpc_peering_connection" "Alpha_to_Beta" {
 }
 
 resource "aws_route" "route_Alpha_to_Beta" {
-  route_table_id            = module.vpc_alpha.public_rtb_id
+  route_table_id            = module.vpc_alpha.public_rtb_ids[0]
   destination_cidr_block    = module.vpc_beta.vpc_cidr_block
   vpc_peering_connection_id = aws_vpc_peering_connection.Alpha_to_Beta.id
 }
 
 resource "aws_route" "route_Beta_to_Alpha" {
-  route_table_id            = module.vpc_beta.public_rtb_id
+  route_table_id            = module.vpc_beta.public_rtb_ids[0]
   destination_cidr_block    = module.vpc_alpha.vpc_cidr_block
   vpc_peering_connection_id = aws_vpc_peering_connection.Alpha_to_Beta.id
 }
@@ -43,7 +43,7 @@ resource "aws_vpc_peering_connection" "Alpha_to_Delta" {
 }
 
 resource "aws_route" "route_Alpha_to_Delta" {
-  route_table_id            = module.vpc_alpha.public_rtb_id
+  route_table_id            = module.vpc_alpha.public_rtb_ids[0]
   destination_cidr_block    = aws_vpc_ipv4_cidr_block_association.secondary_cidr.cidr_block
   vpc_peering_connection_id = aws_vpc_peering_connection.Alpha_to_Delta.id
 }

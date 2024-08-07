@@ -14,6 +14,8 @@ module "vpc_alpha" {
   vpc_name            = var.vpc_name
 }
 
+
+
 # Create TLS keys
 resource "tls_private_key" "ec2_alpha_key" {
   algorithm = "RSA"
@@ -55,7 +57,7 @@ resource "aws_security_group" "alpha_sg" {
     from_port   = -1
     to_port     = -1
     protocol    = "icmp"
-    cidr_blocks = ["192.168.0.0/16", "192.169.0.0/16"]
+    cidr_blocks = ["192.168.0.0/16", "192.169.0.0/16", "10.1.0.0/16"]
   }
   egress {
     from_port   = 0
@@ -69,11 +71,11 @@ resource "aws_security_group" "alpha_sg" {
 resource "aws_instance" "alpha" {
   count                       = var.ec2_count
   ami                         = "ami-0ba9883b710b05ac6"
-  instance_type               = "t3.micro"
+  instance_type               = "t2.micro"
   subnet_id                   = module.vpc_alpha.public_subnet_ids[count.index]
   key_name                    = aws_key_pair.gen_key.key_name
   vpc_security_group_ids      = [aws_security_group.alpha_sg.id]
-  associate_public_ip_address = false
+  # associate_public_ip_address = false
 
   tags = {
     Name       = "${var.vpc_name}-instance-${count.index + 1}"
@@ -92,5 +94,3 @@ resource "aws_eip" "web" {
 
 # Data source to get the current AWS region
 data "aws_region" "vpc_alpha" {}
-
-

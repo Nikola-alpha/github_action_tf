@@ -55,7 +55,7 @@ resource "aws_security_group" "alpha_sg" {
     from_port   = -1
     to_port     = -1
     protocol    = "icmp"
-    cidr_blocks = ["192.168.0.0/16", "192.169.0.0/16"]
+    cidr_blocks = ["192.168.0.0/16", "192.169.0.0/16", "10.1.0.0/16"]
   }
   egress {
     from_port   = 0

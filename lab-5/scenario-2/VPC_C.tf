@@ -102,11 +102,11 @@ resource "aws_security_group" "delta_sg" {
 resource "aws_instance" "delta" {
   count                       = var.ec2_count_delta
   ami                         = "ami-0ba9883b710b05ac6"
-  instance_type               = "t3.micro"
+  instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.secondary_public.id
   key_name                    = aws_key_pair.delta_key.key_name
   vpc_security_group_ids      = [aws_security_group.delta_sg.id]
-  associate_public_ip_address = false
+  # associate_public_ip_address = false
   private_ip                  = "192.169.0.10"
 
   tags = {

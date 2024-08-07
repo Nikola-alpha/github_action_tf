@@ -73,7 +73,7 @@ resource "aws_instance" "beta" {
   subnet_id                   = element(module.vpc_beta.public_subnet_ids, 0)
   key_name                    = aws_key_pair.beta_key.key_name
   vpc_security_group_ids      = [aws_security_group.beta_sg.id]
-  associate_public_ip_address = false
+  # associate_public_ip_address = false
 
   tags = {
     Name       = "${var.vpc_name_beta}-instance-${count.index + 1}"
