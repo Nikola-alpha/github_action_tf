@@ -7,13 +7,13 @@ variable "ec2_count_delta" {
 }
 
 module "vpc_delta" {
-  source              = "../modules/base-infra"
-  cidr_block          = "192.168.0.0/16"
-  public_subnet_count = 0
-  public_subnet_cidrs = ["192.168.0.0/24"]
-  private_subnet_count = 1
-  private_subnet_cidrs = ["192.168.1.0/24"]
-  vpc_name            = var.vpc_name_delta
+  source               = "../modules/base-infra"
+  cidr_block           = "192.168.0.0/16"
+  public_subnet_count  = 0
+  public_subnet_cidrs  = ["192.168.0.0/24"]
+  private_subnet_count = 2
+  private_subnet_cidrs = ["192.168.1.0/24", "192.168.2.0/24"]
+  vpc_name             = var.vpc_name_delta
 }
 
 # Create Security groups
@@ -44,7 +44,7 @@ resource "aws_instance" "delta" {
   count                       = var.ec2_count_delta
   ami                         = var.ec2-ami
   instance_type               = "t2.micro"
-  subnet_id                   = element(module.vpc_delta.private_subnet_ids, 0)
+  subnet_id                   = element(module.vpc_delta.private_subnet_ids, 1)
   key_name                    = aws_key_pair.gen_key.key_name
   vpc_security_group_ids      = [aws_security_group.delta_sg.id]
   associate_public_ip_address = false
@@ -57,3 +57,10 @@ resource "aws_instance" "delta" {
 
 # Data source to get the current AWS region
 data "aws_region" "vpc_delta" {}
+
+# Route for Private Subnet in VPC Delat
+resource "aws_route" "nat_route_delta" {
+  route_table_id         = module.vpc_delta.private_rtb_ids[1]
+  destination_cidr_block = "0.0.0.0/0"
+  transit_gateway_id = aws_ec2_transit_gateway.egress_tgw.id
+}

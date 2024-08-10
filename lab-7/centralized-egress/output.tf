@@ -38,6 +38,16 @@ output "bastion_ssh_command" {
   description = "Command to SSH into the bastion host"
 }
 
+output "beta_svr_ip" {
+  value = aws_instance.beta[0].private_ip
+  description = "Private ip of the Beta "
+}
+output "delta_svr_ip" {
+  value = aws_instance.delta[0].private_ip
+  description = "Private ip of the Beta instance"
+}
+
+
 # output "bastion_ssh_command_for_serverAC" {
 #   value       = "ssh -i ${local_file.alpha_key.filename} ec2-user@${aws_eip.web[1].public_ip}"
 #   description = "Command to SSH into the bastion host"

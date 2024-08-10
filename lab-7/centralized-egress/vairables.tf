@@ -11,6 +11,6 @@ locals {
 
 variable "ec2-ami" {
   description = "The ami id of the ec2."
-  type = string
-  default = "ami-0a6b545f62129c495"
+  type        = string
+  default     = "ami-0a6b545f62129c495"
 }

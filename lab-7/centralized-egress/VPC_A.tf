@@ -7,13 +7,35 @@ variable "ec2_count" {
 }
 
 module "vpc_alpha" {
-  source              = "../modules/base-infra"
-  cidr_block          = "10.1.0.0/16"
-  public_subnet_count = 1
-  public_subnet_cidrs = ["10.1.0.0/24"]
-  vpc_name            = var.vpc_name
+  source               = "../modules/base-infra"
+  cidr_block           = "10.1.0.0/16"
+  public_subnet_count  = 1
+  public_subnet_cidrs  = ["10.1.0.0/24"]
+  vpc_name             = var.vpc_name
   private_subnet_count = 1
   private_subnet_cidrs = ["10.1.1.0/24"]
+}
+
+# NAT Gateway in Public Subnet of VPC Alpha
+resource "aws_nat_gateway" "nat_gw_alpha" {
+  allocation_id = aws_eip.nat_eip_alpha.id
+  subnet_id     = module.vpc_alpha.public_subnet_ids[0]
+  tags = {
+    Name = "Alpha_NAT-GW"
+  }
+  depends_on = [module.vpc_alpha.igw]
+}
+
+# Route for Private Subnets in VPC Alpha
+resource "aws_route" "nat_route_alpha" {
+  route_table_id         = module.vpc_alpha.private_rtb_ids[0]
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.nat_gw_alpha.id
+}
+
+# Elastic IP for NAT Gateway in VPC Alpha
+resource "aws_eip" "nat_eip_alpha" {
+  domain = "vpc"
 }
 
 # Create TLS keys
@@ -53,7 +75,7 @@ resource "aws_security_group" "alpha_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-    ingress {
+  ingress {
     from_port   = -1
     to_port     = -1
     protocol    = "icmp"
@@ -78,7 +100,7 @@ resource "aws_instance" "bastion_host" {
   associate_public_ip_address = false
 
   tags = {
-    Name       = "${var.vpc_name}-instance-${count.index + 1}"
+    Name       = "${var.vpc_name}-bastion"
     Managed_by = local.Managed_by
   }
 }
@@ -106,7 +128,7 @@ resource "null_resource" "configure_ssh" {
     connection {
       type        = "ssh"
       user        = "ec2-user"
-      private_key = tls_private_key.ec2_alpha_key.public_key_pem
+      private_key = tls_private_key.ec2_alpha_key.private_key_pem
       host        = aws_eip.bastion_eip[0].public_ip
     }
   }
@@ -123,4 +145,18 @@ resource "null_resource" "configure_ssh" {
       host        = aws_eip.bastion_eip[0].public_ip
     }
   }
+}
+
+# Route for bastion_host to Private Subnets in Beta
+resource "aws_route" "nat_route_alpha_to_beta" {
+  route_table_id         = module.vpc_alpha.public_rtb_ids[0]
+  destination_cidr_block = module.vpc_beta.vpc_cidr_block
+  transit_gateway_id = aws_ec2_transit_gateway.egress_tgw.id
+}
+
+# Route for bastion_host to Private Subnets in Delta
+resource "aws_route" "nat_route_alpha_to_delta" {
+  route_table_id         = module.vpc_alpha.public_rtb_ids[0]
+  destination_cidr_block = module.vpc_delta.vpc_cidr_block
+  transit_gateway_id = aws_ec2_transit_gateway.egress_tgw.id
 }
