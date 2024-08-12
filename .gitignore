@@ -2,3 +2,7 @@ lab-7/centralized-egress/.terraform
 lab-7/centralized-egress/.terraform.lock.hcl
 lab-7/centralized-egress/terraform.tfstate
 lab-7/centralized-egress/terraform.tfstate.backup
+lab-8/.terraform
+lab-8/.terraform.lock.hcl
+lab-8/terraform.tfstate
+lab-8/terraform.tfstate.backup

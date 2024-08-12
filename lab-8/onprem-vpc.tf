@@ -2,16 +2,16 @@ variable "vpc_name" {
   description = "The name of VPC."
 }
 
-variable "ec2_count" {
-  default = 1
-}
+# variable "ec2_count" {
+#   default = 1
+# }
 
 module "vpc_alpha" {
-  source              = "../vpc-modules/base-infra"
-  cidr_block          = "10.1.0.0/16"
-  public_subnet_count = 2
-  public_subnet_cidrs = ["10.1.0.0/24", "10.1.1.0/24"]
-  vpc_name            = var.vpc_name
+  source               = "../vpc-modules/base-infra"
+  cidr_block           = "10.1.0.0/16"
+  public_subnet_count  = 2
+  public_subnet_cidrs  = ["10.1.0.0/24", "10.1.1.0/24"]
+  vpc_name             = var.vpc_name
   private_subnet_count = 0
   private_subnet_cidrs = ["10.1.2.0/24"]
 }
@@ -53,11 +53,23 @@ resource "aws_security_group" "alpha_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-    ingress {
+  ingress {
     from_port   = -1
     to_port     = -1
     protocol    = "icmp"
-    cidr_blocks = ["192.168.0.0/16", "10.1.0.0/16"]
+    cidr_blocks = ["172.32.0.0/16", "10.1.0.0/16"]
+  }
+  ingress {
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = ["172.32.0.0/16", "10.1.0.0/16"]
+  }
+  ingress {
+    from_port   = 53
+    to_port     = 53
+    protocol    = "tcp"
+    cidr_blocks = ["172.32.0.0/16", "10.1.0.0/16"]
   }
   egress {
     from_port   = 0
@@ -65,11 +77,14 @@ resource "aws_security_group" "alpha_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  tags = {
+    Name = "${var.vpc_name}-sg"
+  }
 }
 
-# Create ec2 with eip
+# Create ec2 with eip (DNS & bastion_host)
 resource "aws_instance" "bastion_host" {
-  count                       = var.ec2_count
+  # count                       = var.ec2_count
   ami                         = var.ec2-ami
   instance_type               = "t2.micro"
   subnet_id                   = element(module.vpc_alpha.public_subnet_ids, 0)
@@ -77,17 +92,23 @@ resource "aws_instance" "bastion_host" {
   vpc_security_group_ids      = [aws_security_group.alpha_sg.id]
   associate_public_ip_address = false
 
+  user_data = <<-EOF
+              #!/bin/bash
+              dnf update -y
+              dnf -y install bind bind-utils
+              EOF
+
   tags = {
-    Name       = "${var.vpc_name}-instance-${count.index + 1}"
+    Name       = "${var.vpc_name}-DNS"
     Managed_by = local.Managed_by
   }
 }
 resource "aws_eip" "bastion_eip" {
-  count    = var.ec2_count
+  # count    = var.ec2_count
   domain   = "vpc"
-  instance = aws_instance.bastion_host[count.index].id
+  instance = aws_instance.bastion_host.id
   tags = {
-    Name       = "${var.vpc_name}-eip-${count.index + 1}"
+    Name       = "${var.vpc_name}-eip-DNS"
     Managed_by = local.Managed_by
   }
 }
@@ -107,7 +128,7 @@ resource "null_resource" "configure_ssh" {
       type        = "ssh"
       user        = "ec2-user"
       private_key = tls_private_key.ec2_alpha_key.private_key_pem
-      host        = aws_eip.bastion_eip[0].public_ip
+      host        = aws_eip.bastion_eip.public_ip
     }
   }
 
@@ -120,7 +141,21 @@ resource "null_resource" "configure_ssh" {
       type        = "ssh"
       user        = "ec2-user"
       private_key = tls_private_key.ec2_alpha_key.private_key_pem
-      host        = aws_eip.bastion_eip[0].public_ip
+      host        = aws_eip.bastion_eip.public_ip
     }
+  }
+}
+
+resource "aws_instance" "app_svr" {
+  ami                         = var.ec2-ami
+  instance_type               = "t2.micro"
+  subnet_id                   = element(module.vpc_alpha.public_subnet_ids, 1)
+  key_name                    = aws_key_pair.gen_key.key_name
+  vpc_security_group_ids      = [aws_security_group.alpha_sg.id]
+  associate_public_ip_address = false
+
+  tags = {
+    Name       = "${var.vpc_name}-App"
+    Managed_by = local.Managed_by
   }
 }

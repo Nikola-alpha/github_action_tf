@@ -2,9 +2,9 @@ variable "vpc_name_beta" {
   description = "The name of VPC."
 }
 
-variable "ec2_count_beta" {
-  default = 1
-}
+# variable "ec2_count_beta" {
+#   default = 1
+# }
 
 module "vpc_beta" {
   source               = "../vpc-modules/base-infra"
@@ -31,6 +31,18 @@ resource "aws_security_group" "beta_sg" {
     protocol    = "icmp"
     cidr_blocks = ["10.1.0.0/16"]
   }
+  ingress {
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = ["10.1.0.0/16"]
+  }
+  ingress {
+    from_port   = 53
+    to_port     = 53
+    protocol    = "tcp"
+    cidr_blocks = ["10.1.0.0/16"]
+  }
   egress {
     from_port   = 0
     to_port     = 0
@@ -44,7 +56,7 @@ resource "aws_security_group" "beta_sg" {
 
 # Create ec2 with eip
 resource "aws_instance" "beta" {
-  count                       = var.ec2_count_beta
+  # count                       = var.ec2_count_beta
   ami                         = var.ec2-ami
   instance_type               = "t2.micro"
   subnet_id                   = element(module.vpc_beta.public_subnet_ids, 0)
@@ -53,7 +65,7 @@ resource "aws_instance" "beta" {
   associate_public_ip_address = false
 
   tags = {
-    Name       = "${var.vpc_name_beta}-instance"
+    Name       = "${var.vpc_name_beta}-App"
     Managed_by = local.Managed_by
   }
 }
