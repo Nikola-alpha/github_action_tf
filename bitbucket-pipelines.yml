@@ -4,6 +4,7 @@ pipelines:
         name: Terraform Validate and Plan
         image: hashicorp/terraform:latest
         script:
+          - cd lab-5/scenario-1
           - terraform init
           - terraform validate
           - terraform plan -out=tfplan
