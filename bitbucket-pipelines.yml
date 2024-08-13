@@ -1,0 +1,9 @@
+pipelines:
+  default:
+    - step:
+        name: Terraform Validate and Plan
+        image: hashicorp/terraform:latest
+        script:
+          - terraform init
+          - terraform validate
+          - terraform plan -out=tfplan
