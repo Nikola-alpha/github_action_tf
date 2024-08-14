@@ -15,7 +15,7 @@ pipelines:
     - step:
         name: Terraform Apply
         script:
-          - terraform apply -auto-approve tfplan
+          - terraform apply -auto-approve
           - terraform output
         artifacts:
           - tfplan
