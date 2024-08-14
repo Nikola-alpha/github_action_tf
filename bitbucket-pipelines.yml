@@ -7,4 +7,4 @@ pipelines:
           - cd lab-5/scenario-1
           - terraform init
           - terraform validate
-          - terraform plan -out=tfplan
+          - terraform plan -var "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" -var "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" -out=tfplan
