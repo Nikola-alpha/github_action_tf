@@ -6,7 +6,9 @@ pipelines:
         name: Terraform Init and Plan
         script:
           - terraform init
-          - terraform plan -out=tfplan
+          - terraform fmt
+          - terraform validate
+          - terraform plan -var "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" -var "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" -out=tfplan
     - step:
         name: Terraform Apply
         script:
