@@ -1,0 +1,12 @@
+pipelines:
+  default:
+    - step:
+        name: Terraform Init and Plan
+        script:
+          - terraform init
+          - terraform plan -out=tfplan
+    - step:
+        name: Terraform Apply
+        script:
+          - terraform apply -auto-approve tfplan
+          - terraform output
