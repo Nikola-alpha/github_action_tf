@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-    #   version = "5.62.0"
+      version = "5.62.0"
     }
   }
   backend "s3" {
@@ -12,8 +12,6 @@ terraform {
   dynamodb_table = "tf_lock_table"
 }
 }
-
-
 
 provider "aws" {
   region     = "ap-southeast-1"
