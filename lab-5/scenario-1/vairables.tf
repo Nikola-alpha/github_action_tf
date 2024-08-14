@@ -1,6 +1,7 @@
 variable "AWS_REGION" {
   description = "The region of the AWS resources."
   type        = string
+  default     = "ap-southeast-1"
 }
 locals {
   Managed_by = "Terraform"
