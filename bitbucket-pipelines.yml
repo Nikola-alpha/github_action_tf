@@ -1,6 +1,8 @@
+
 pipelines:
   default:
     - step:
+        image: hashicorp/terraform:latest
         name: Terraform Init and Plan
         script:
           - terraform init
