@@ -1,8 +1,8 @@
+image: hashicorp/terraform:latest
 
 pipelines:
   default:
     - step:
-        image: hashicorp/terraform:latest
         name: Terraform Init and Plan
         script:
           - terraform init
@@ -10,7 +10,6 @@ pipelines:
           - terraform validate
           - terraform plan -var "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" -var "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" -out=tfplan
     - step:
-        image: hashicorp/terraform:latest
         name: Terraform Apply
         script:
           - terraform apply -auto-approve tfplan
