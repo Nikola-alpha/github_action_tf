@@ -10,7 +10,7 @@ terraform {
   key            = "tf-state"
   region         = "ap-southeast-1"
   dynamodb_table = "tf_lock_table"
-}
+  }
 }
 
 provider "aws" {
