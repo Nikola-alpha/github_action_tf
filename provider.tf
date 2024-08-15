@@ -7,7 +7,7 @@ terraform {
   }
   backend "s3" {
     bucket         = "tf-sys-bucket"
-    key            = "tf-state"
+    key            = "tf-state-github"
     region         = "ap-southeast-1"
     dynamodb_table = "tf_lock_table"
   }
