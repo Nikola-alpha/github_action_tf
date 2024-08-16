@@ -84,7 +84,8 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch:
+# disable manual run workflow
+      # workflow_dispatch:
 
 jobs:
   terraform:
