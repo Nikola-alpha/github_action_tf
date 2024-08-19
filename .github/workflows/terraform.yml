@@ -84,6 +84,7 @@ on:
   pull_request:
     branches:
       - main
+# disable manual run workflow
   workflow_dispatch:
 
 jobs:
